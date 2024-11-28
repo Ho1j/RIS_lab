@@ -1,0 +1,44 @@
+body {
+    background-color: #fff3e7;
+    font-size: 24px;
+}
+
+.buttons-menu{
+    margin-top: 30px;
+}
+
+button {
+    display: inline-block;
+    font-size: 20px;
+    text-align: center;
+    width: 150px;
+    height: 50px;
+    color: black;
+    background-color: white;
+    border: 3px solid dimgrey;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 15px;
+    margin-left: 15px;
+}
+
+.buttons-menu {
+
+}
+
+.success {
+  background-color: #387C4A	;
+    font-size: 15px;
+    padding-top: 5px;
+    color: white;
+    text-align: center;
+    height: 30px;
+}
+.error {
+  background-color: #A6564B;
+    padding-top: 5px;
+    color: white;
+    font-size: 15px;
+    text-align: center;
+    height: 30px;
+}
