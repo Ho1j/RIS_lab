@@ -1,5 +1,2 @@
-SELECT * FROM internal_users
-WHERE login='$login'
-UNION
-SELECT * FROM external_users
+SELECT * FROM users
 WHERE login='$login'

@@ -1,3 +1,5 @@
+from calendar import month
+
 from flask import Blueprint, render_template, request, current_app, session, redirect, flash, url_for
 from db_utils import select_dict
 from sql_provider import SQL_Provider
@@ -47,7 +49,9 @@ def create_1():
 def view_1():
     if request.method == 'GET':
         sql = provider.get_sql('view_reports_1.sql')
+        print(sql)
         reports_list = select_dict(current_app.config['DB_CONFIG'], sql)
+        print(reports_list)
         return render_template('view_1.html', reports_list=reports_list)
     else:
         month = request.form.get('month')

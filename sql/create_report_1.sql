@@ -1,1 +1,1 @@
-CALL proc_report_1('$month', '$year');
+CALL CreateMonthlyReport('$month', '$year');
