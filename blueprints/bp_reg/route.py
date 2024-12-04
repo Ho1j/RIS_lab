@@ -1,5 +1,5 @@
 ﻿from flask import Blueprint, render_template, request, current_app, session, flash, redirect, url_for
-from db_utils import insert_sql
+from db_utils import insert_sql, execute_and_fetch
 from sql_provider import SQL_Provider
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -29,7 +29,7 @@ def register_page():
         hashed_password = generate_password_hash(password)
 
         sql = provider.get_sql('reg.sql', login = login, hashed_password = hashed_password)
-        insert_sql(current_app.config['DB_CONFIG'], sql)
+        execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         print(hashed_password)
         print(sql)
         print(check_password_hash(hashed_password, "test"))

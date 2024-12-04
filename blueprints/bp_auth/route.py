@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, current_app, session, flash, redirect, url_for
 from werkzeug.security import check_password_hash
-from db_utils import select_dict
+from db_utils import execute_and_fetch
 from sql_provider import SQL_Provider
 
 
@@ -17,8 +17,7 @@ def login_page():
         password = request.form.get('password')
         #задать вопрос насчет sql инъекции, например test_user'); DROP TABLE external_users; --
         sql = provider.get_sql('auth.sql', login=login)
-        result = select_dict(current_app.config['DB_CONFIG'], sql)
-        print(result)
+        result = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         if not result:
             flash('Пользователь не найден', 'error')
             return render_template('auth.html')
@@ -26,7 +25,6 @@ def login_page():
             flash('Неверный пароль', 'error')
             return render_template('auth.html')
         session['group_name'], session['login'] = result[0]['user_group'], result[0]['login']
-        print(session['group_name'])
         session['user_id'] = result[0]['user_id']
         flash(f"Вы авторизовались как {session['login']}", 'success')
         return redirect(url_for('home_page'))

@@ -1,7 +1,7 @@
 from calendar import month
 
 from flask import Blueprint, render_template, request, current_app, session, redirect, flash, url_for
-from db_utils import select_dict
+from db_utils import execute_and_fetch
 from sql_provider import SQL_Provider
 import access
 
@@ -27,10 +27,10 @@ def create_1():
             month = request.form.get('month')
             year = request.form.get('year')
             find_check_count = provider.get_sql('check_1.sql', month=month, year=year)
-            check_count = select_dict(current_app.config['DB_CONFIG'], find_check_count)
+            check_count = execute_and_fetch(current_app.config['DB_CONFIG'], find_check_count)
             if check_count[0]['count'] == 0:
                 sql = provider.get_sql('create_report_1.sql', month=month, year=year)
-                result = select_dict(current_app.config['DB_CONFIG'], sql)
+                result = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
                 if result is None:
                     flash(f"Вы создали отчёт за {month} месяц {year} года", 'success')
                     return redirect(url_for('bp_reports.reports_choice'))
@@ -50,14 +50,14 @@ def view_1():
     if request.method == 'GET':
         sql = provider.get_sql('view_reports_1.sql')
         print(sql)
-        reports_list = select_dict(current_app.config['DB_CONFIG'], sql)
+        reports_list = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         print(reports_list)
         return render_template('view_1.html', reports_list=reports_list)
     else:
         month = request.form.get('month')
         year = request.form.get('year')
         sql = provider.get_sql('view_report_result_1.sql', month=month, year=year)
-        result = select_dict(current_app.config['DB_CONFIG'], sql)
+        result = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         title = f"Отчёт за {month} месяц {year} года"
         num = 1
         return render_template('reports_result.html', result=result, title=title, num=num)

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
-from db_utils import select_dict
+from db_utils import execute_and_fetch
 from sql_provider import SQL_Provider
 import json
 import access
@@ -22,14 +22,14 @@ def search_choice():
 def input_price():
     if request.method == 'GET':
         find_categories = provider.get_sql('categories.sql')
-        categories = select_dict(current_app.config['DB_CONFIG'], find_categories)
+        categories = execute_and_fetch(current_app.config['DB_CONFIG'], find_categories)
         return render_template('input_price.html', categories=categories)
     else:
         category = request.form.get('category')
         price = request.form.get('price')
         sql = provider.get_sql('queries.sql', category=category, price=price)
 
-        products = select_dict(current_app.config['DB_CONFIG'], sql)
+        products = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         return render_template('results.html', prod_title=f"Продукты категории {category} с ценой до {price} руб",
                                products=products, products_imgs=products_imgs, page='input_price')
 
@@ -39,13 +39,13 @@ def input_market():
                'на Рижской': 'Rizhskaya', 'онлайн': 'online'}
     if request.method == 'GET':
         find_categories = provider.get_sql('categories.sql')
-        categories = select_dict(current_app.config['DB_CONFIG'], find_categories)
+        categories = execute_and_fetch(current_app.config['DB_CONFIG'], find_categories)
         return render_template('input_market.html', markets=markets.keys(), categories=categories)
     else:
         market_rus = request.form.get('market')
         market = markets[market_rus]
         category = request.form.get('category')
         sql = provider.get_sql('market.sql', market=market, category=category)
-        products = select_dict(current_app.config['DB_CONFIG'], sql)
+        products = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
         return render_template('results.html', prod_title=f"Продукты категории {category} в наличии в магазине {market_rus}",
                                products=products, products_imgs=products_imgs, page='input_market')

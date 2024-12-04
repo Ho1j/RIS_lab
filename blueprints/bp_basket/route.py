@@ -3,7 +3,9 @@ from flask import (
 	request, current_app,
 	session, redirect, url_for
 )
-from db_utils import select_dict
+
+from db_connect import DB_Context_Manager
+from db_utils import execute_and_fetch
 from sql_provider import SQL_Provider
 from cache.wrapper import fetch_from_cache
 import access
@@ -19,11 +21,13 @@ provider = SQL_Provider('./sql')
 def basket_index():
 	db_config = current_app.config['DB_CONFIG']
 	cache_config = current_app.config['CACHE_CONFIG']
-	cached_func = fetch_from_cache('all_items_cached', cache_config)(select_dict)
+	cached_func = fetch_from_cache('all_items_cached', cache_config)(execute_and_fetch)
 	sql = provider.get_sql('all_items.sql')
 	items = cached_func(db_config, sql)
 	if request.method == 'GET':
 		basket_items = session.get('basket', {})
+		print(session)
+		print(basket_items)
 		return render_template('index.html', items=items, basket_items=basket_items)
 	else:
 		prod_id = request.form['prod_id']
@@ -56,11 +60,12 @@ def order():
 	sum = 0
 	for item in session.get('basket').values():
 		sum += item['amount'] * item['price']
-
-	sql_order = provider.get_sql('new_order.sql', user_id=session['user_id'], sum=sum)
-	select_dict(current_app.config['DB_CONFIG'], sql_order)
-	for key, value in session['basket'].items():
-		sql_basket = provider.get_sql('new_order_line.sql', prod_id=key, amount=value['amount'])
-		select_dict(current_app.config['DB_CONFIG'], sql_basket)
-	session.pop('basket')
+	with DB_Context_Manager(current_app.config['DB_CONFIG']) as cursor:
+		sql_order = provider.get_sql('new_order.sql', user_id=session['user_id'], sum=sum)
+		cursor.execute(sql_order)
+		session['basket'].items()
+		for key, value in session['basket'].items():
+			sql_basket = provider.get_sql('new_order_line.sql', prod_id=key, amount=value['amount'])
+			cursor.execute(sql_basket)
+		session.pop('basket')
 	return render_template('order.html', sum=sum)
