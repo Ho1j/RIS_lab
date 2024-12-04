@@ -1,6 +1,7 @@
 ﻿from db_connect import DB_Context_Manager
 
-def select_dict(config: dict, _sql: str):
+
+def execute_and_fetch(config: dict, _sql: str):
     with DB_Context_Manager(config) as cursor:
         if cursor is None:
             raise ValueError('Курсор не создан')
@@ -14,11 +15,3 @@ def select_dict(config: dict, _sql: str):
             else:
                 return None
 
-
-def insert_sql(config: dict, _sql: str):
-    with DB_Context_Manager(config) as cursor:
-        if cursor is None:
-            raise ValueError("Курсор не создан")
-
-        cursor.execute(_sql)
-        return cursor.rowcount
