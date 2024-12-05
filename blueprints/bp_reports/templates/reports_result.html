@@ -12,15 +12,15 @@
   <p>
             <table border="1">
             <tr>
-                <th class="table-head-item">id покупателя</th>
-                <th class="table-head-item">Дата заказа</th>
-                <th class="table-head-item">Сумма заказа</th>
+                <th class="table-head-item">Наименование позиции</th>
+                <th class="table-head-item">Продано шт. за период</th>
+                <th class="table-head-item">Сумма продаж за период</th>
             </tr>
             {% for i in result %}
             <tr>
-                <td>{{ i['user_id'] }}</td>
-                <td>{{ i['order_date'] }}</td>
-                <td>{{ i['order_sum'] }}</td>
+                <td>{{ i['prod_name'] }}</td>
+                <td>{{ i['total_quantity'] }}</td>
+                <td>{{ i['total_sum'] }}</td>
             </tr>
             {% endfor %}
             </table>
