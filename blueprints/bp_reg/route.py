@@ -1,5 +1,5 @@
 ﻿from flask import Blueprint, render_template, request, current_app, session, flash, redirect, url_for
-from db_utils import insert_sql, execute_and_fetch
+from db_utils import execute_and_fetch
 from sql_provider import SQL_Provider
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -30,9 +30,6 @@ def register_page():
 
         sql = provider.get_sql('reg.sql', login = login, hashed_password = hashed_password)
         execute_and_fetch(current_app.config['DB_CONFIG'], sql)
-        print(hashed_password)
-        print(sql)
-        print(check_password_hash(hashed_password, "test"))
 
         flash('Вы успешно зарегистрировались!', 'success')
         return redirect(url_for('bp_auth.login_page'))
