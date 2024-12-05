@@ -1,1 +1,0 @@
-CALL CreateMonthlyReport('$month', '$year');
