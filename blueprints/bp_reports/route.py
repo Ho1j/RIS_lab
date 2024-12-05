@@ -31,12 +31,12 @@ def create_1():
                 flash('Дата начала периода не может быть меньше даты его конца', 'error')
                 return render_template('create_1.html')
 
-            find_check_count = provider.get_sql('create_total_orders_by_period_report.sql', date_start=date_start, date_end=date_end)
+            find_check_count = provider.get_sql('check_total_orders_by_period_report_existence.sql', date_start=date_start, date_end=date_end)
             check_count = execute_and_fetch(current_app.config['DB_CONFIG'], find_check_count)
             print(check_count[0]['count'])
             print(check_count)
             if check_count[0]['count'] == 0:
-                sql = provider.get_sql('create_total_orders_by_period_report.sql.sql', date_start=date_start, date_end=date_end)
+                sql = provider.get_sql('create_total_orders_by_period_report.sql', date_start=date_start, date_end=date_end)
                 result = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
                 if result is None:
                     flash(f"Вы создали отчёт за период с {date_start} по {date_end}", 'success')
@@ -58,7 +58,9 @@ def view_1():
         sql = provider.get_sql('view_all_total_orders_by_period_reports.sql')
         print(sql)
         reports_list = execute_and_fetch(current_app.config['DB_CONFIG'], sql)
-        print(reports_list)
+        if reports_list is None:
+            flash('Нет доступных отчетов, создайте новый', 'error')
+            return render_template('reports_choice.html', reports=reports)
         return render_template('view_1.html', reports_list=reports_list)
     else:
         date_start = request.form.get('date_start')
