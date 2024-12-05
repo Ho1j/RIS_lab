@@ -18,32 +18,6 @@ USE `store`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `monthly_reports`
---
-
-DROP TABLE IF EXISTS `monthly_reports`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `monthly_reports` (
-  `month_reports_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `order_date` date NOT NULL,
-  `order_sum` int NOT NULL,
-  PRIMARY KEY (`month_reports_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `monthly_reports`
---
-
-LOCK TABLES `monthly_reports` WRITE;
-/*!40000 ALTER TABLE `monthly_reports` DISABLE KEYS */;
-INSERT INTO `monthly_reports` VALUES (1,2,'2023-11-28',2850),(2,2,'2023-11-28',2850),(3,2,'2023-11-28',2850),(4,2,'2023-11-28',2850),(5,2,'2023-11-28',1350),(6,2,'2023-11-28',1350),(7,2,'2023-11-28',1400),(8,2,'2023-11-29',600),(9,2,'2023-11-29',2350),(16,23,'2023-08-30',2000),(17,24,'2023-08-05',333),(18,2,'2023-08-08',3000);
-/*!40000 ALTER TABLE `monthly_reports` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `orders_lines`
 --
 
@@ -69,6 +43,34 @@ LOCK TABLES `orders_lines` WRITE;
 /*!40000 ALTER TABLE `orders_lines` DISABLE KEYS */;
 INSERT INTO `orders_lines` VALUES (1,19,1,1),(2,19,4,1),(3,19,5,3),(4,19,6,1),(5,20,5,1),(6,20,6,3),(7,21,5,1),(8,21,6,3),(9,22,4,1),(10,22,5,1),(11,22,6,2),(12,23,5,1),(13,24,1,1),(14,24,5,1),(15,24,6,1),(16,24,7,1),(17,25,5,1),(18,25,6,1),(19,26,5,2),(20,26,6,1);
 /*!40000 ALTER TABLE `orders_lines` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `period_total_orders`
+--
+
+DROP TABLE IF EXISTS `period_total_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `period_total_orders` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `prod_name` varchar(255) NOT NULL,
+  `total_quantity` int NOT NULL,
+  `total_sum` decimal(10,2) NOT NULL,
+  `period_start` date NOT NULL,
+  `period_end` date NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `period_total_orders`
+--
+
+LOCK TABLES `period_total_orders` WRITE;
+/*!40000 ALTER TABLE `period_total_orders` DISABLE KEYS */;
+INSERT INTO `period_total_orders` VALUES (19,'баранина',2,1450.00,'2024-12-01','2024-12-30'),(20,'ветчина',1,1450.00,'2024-12-01','2024-12-30'),(22,'баранина',2,1450.00,'2024-12-01','2024-12-05'),(23,'ветчина',1,1450.00,'2024-12-01','2024-12-05'),(25,'баранина',2,1450.00,'2024-12-01','2024-12-28'),(26,'ветчина',1,1450.00,'2024-12-01','2024-12-28');
+/*!40000 ALTER TABLE `period_total_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -154,7 +156,7 @@ UNLOCK TABLES;
 --
 -- Dumping routines for database 'store'
 --
-/*!50003 DROP PROCEDURE IF EXISTS `CreateMonthlyReport` */;
+/*!50003 DROP PROCEDURE IF EXISTS `CreatePeriodTotalOrdersReport` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -164,23 +166,64 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateMonthlyReport`(IN month INT, IN year INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CreatePeriodTotalOrdersReport`(IN date_start DATE, IN date_end DATE)
 BEGIN
-    -- Генерируем имя таблицы на основе месяца и года
-    SET @table_name = CONCAT('monthly_reports');
-
-    -- Вставляем данные в таблицу
-    SET @insert_query = CONCAT(
-        'INSERT INTO ', @table_name, ' (user_id, order_date, order_sum)
-         SELECT user_id, order_date, order_sum
-         FROM user_orders
-         WHERE MONTH(order_date) = ', month, ' AND YEAR(order_date) = ', year, ';'
-    );
-
-    -- Выполняем вставку
-    PREPARE stmt FROM @insert_query;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
+    -- Вставляем данные в таблицу period_total_orders
+    INSERT INTO period_total_orders (prod_name, total_quantity, total_sum, period_start, period_end)
+    SELECT 
+        prod_name, 
+        SUM(amount) AS total_quantity, 
+        SUM(order_sum) AS total_sum, 
+        date_start AS period_start, 
+        date_end AS period_end
+    FROM orders_lines ol
+    JOIN user_orders uo ON uo.order_id = ol.order_id
+    JOIN products p ON p.prod_id = ol.prod_id
+    WHERE uo.order_date BETWEEN date_start AND date_end
+    AND NOT EXISTS (
+          SELECT 1 
+          FROM period_total_orders 
+          WHERE period_start = date_start AND period_end = date_end AND prod_name = p.prod_name
+      )
+    GROUP BY p.prod_name
+    ORDER BY total_quantity DESC;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `CreateTotalOrdersByPeriodReport` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateTotalOrdersByPeriodReport`(IN date_start DATE, IN date_end DATE)
+BEGIN
+    -- Вставляем данные в таблицу period_total_orders
+    INSERT INTO period_total_orders (prod_name, total_quantity, total_sum, period_start, period_end)
+    SELECT 
+        prod_name, 
+        SUM(amount) AS total_quantity, 
+        SUM(order_sum) AS total_sum, 
+        date_start AS period_start, 
+        date_end AS period_end
+    FROM orders_lines ol
+    JOIN user_orders uo ON uo.order_id = ol.order_id
+    JOIN products p ON p.prod_id = ol.prod_id
+    WHERE uo.order_date BETWEEN date_start AND date_end
+    AND NOT EXISTS (
+          SELECT 1 
+          FROM period_total_orders 
+          WHERE period_start = date_start AND period_end = date_end AND prod_name = p.prod_name
+      )
+    GROUP BY p.prod_name
+    ORDER BY total_quantity DESC;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -197,4 +240,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-04 10:55:23
+-- Dump completed on 2024-12-06  0:45:14
