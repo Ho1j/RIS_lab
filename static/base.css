@@ -84,3 +84,42 @@ hr {
     border: 1px solid #ddd;
     margin: 20px 0;
 }
+
+.flash-messages {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.flash-message {
+    padding: 15px 25px; /* Отступы вокруг текста */
+    border-radius: 10px; /* Закругленные углы */
+    font-size: 16px; /* Размер текста */
+    text-align: center; /* Выравнивание текста по центру */
+    white-space: nowrap; /* Сообщение в одну строку */
+    background-color: rgba(0, 0, 0, 0.8); /* Полупрозрачный черный фон */
+    color: #fff; /* Белый текст */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для красоты */
+    max-width: 90%; /* Ограничение ширины */
+}
+
+/* Стили для разных категорий */
+.flash-message.error {
+    background-color: rgba(255, 0, 0, 0.8); /* Красный фон для ошибок */
+}
+
+.flash-message.success {
+    background-color: rgba(0, 128, 0, 0.8); /* Зеленый фон для успеха */
+}
+
+.flash-message.info {
+    background-color: rgba(0, 0, 255, 0.8); /* Синий фон для информации */
+}
+
+

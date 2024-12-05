@@ -8,10 +8,13 @@
 </head>
 <body>
     {% with messages = get_flashed_messages(with_categories=True) %}
+        <div class="flash-messages">
             {% for category, message in messages %}
-                <div class="{{ category }}">{{ message }}</div>
+                <div class="flash-message {{ category }}">{{ message }}</div>
             {% endfor %}
+        </div>
     {% endwith %}
+
   <div class="logo">
       <h2> Интернет-супермаркет </h2>
   </div>
