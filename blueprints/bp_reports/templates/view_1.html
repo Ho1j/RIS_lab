@@ -18,9 +18,9 @@
 
     {% for report in reports_list %}
       <form action="" method=POST>
-      <button class="button-report" type="submit">Отчёт за {{ report['month'] }} месяц {{ report['year'] }} года</button>
-      <input type="hidden" name="month" value="{{ report['month'] }}">
-        <input type="hidden" name="year" value="{{ report['year'] }}">
+      <button class="button-report" type="submit">Отчёт за период с {{ report['date_start'] }} по {{ report['date_end'] }}</button>
+      <input type="hidden" name="date_start" value="{{ report['date_start'] }}">
+        <input type="hidden" name="date_end" value="{{ report['date_end'] }}">
           </form>
       <hr>
     {% endfor %}
